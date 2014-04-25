@@ -5,6 +5,8 @@ from django.core.servers.basehttp import get_internal_wsgi_application
 from gevent import wsgi
 from gevent.pool import Pool
 
+from django.utils import autoreload
+
 
 defaults = {
     'GEVENT_ADDR_PORT': '8000',
@@ -15,7 +17,10 @@ class Command(BaseCommand):
     help = "Run gevent's WSGI serve Django project"
     args = '[port number or ipaddr:port] [pool size]'
 
-    def handle(self, addr_port=None, pool_size=None, *args, **options):
+    def handle(self, *args, **options):
+        autoreload.main(self.run, args, options)
+
+    def run(self, addr_port=None, pool_size=None, *args, **options):
         if args:
             raise CommandError('Usage: [ipaddr:]addr_port pool_size')
 
