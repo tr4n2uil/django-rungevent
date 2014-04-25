@@ -16,7 +16,7 @@ defaults = {
 class Command(BaseCommand):
     help = "Run gevent's WSGI serve Django project"
     args = '[port number or ipaddr:port] [pool size]'
-    requires_model_validation = True
+    requires_model_validation = False
 
     def handle(self, *args, **options):
         autoreload.main(self.run, args, options)
@@ -46,6 +46,23 @@ class Command(BaseCommand):
                 raise CommandError('Spawn pool size must be an integer')
         else:
             pool = None
+
+        quit_command = (sys.platform == 'win32') and 'CTRL-BREAK' or 'CONTROL-C'
+        self.stdout.write("Validating models...\n\n")
+        self.validate(display_num_errors=True)
+        self.stdout.write((
+            "%(started_at)s\n"
+            "Django version %(version)s, using settings %(settings)r\n"
+            "Development server is running at http://%(addr)s:%(port)s/\n"
+            "Quit the server with %(quit_command)s.\n"
+        ) % {
+            "started_at": datetime.now().strftime('%B %d, %Y - %X'),
+            "version": self.get_version(),
+            "settings": settings.SETTINGS_MODULE,
+            "addr": addr,
+            "port": port,
+            "quit_command": quit_command,
+        })
 
         wsgi_application = get_internal_wsgi_application()
         wsgi.WSGIServer((addr, port), wsgi_application, spawn=pool).serve_forever()
