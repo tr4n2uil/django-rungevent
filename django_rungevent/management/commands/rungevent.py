@@ -16,6 +16,7 @@ defaults = {
 class Command(BaseCommand):
     help = "Run gevent's WSGI serve Django project"
     args = '[port number or ipaddr:port] [pool size]'
+    requires_model_validation = True
 
     def handle(self, *args, **options):
         autoreload.main(self.run, args, options)
